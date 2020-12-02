@@ -20,19 +20,20 @@ impl Password {
         return &self.min <= count && count <= &self.max;
     }
 
+    fn char_at_location_in_password(&self, char_to_check: &char, location: usize) -> bool {
+        if location >= self.pw.chars().count() { return false }
+
+        let char_in_string = self.pw.chars().nth(location);
+        match char_in_string {
+            Some(c) => return c == *char_to_check,
+            _       => return false
+        }
+    }
     pub fn valid_policy2(&self) -> bool {
         let character = &self.c.chars().nth(0).unwrap();
         
-        let mut min_char_valid = false;
-        if self.min <= self.pw.chars().count() {
-           let min_char = &self.pw.chars().nth(self.min-1).unwrap();
-           min_char_valid = min_char == character;
-        }
-        let mut max_char_valid = false;
-        if self.max <= self.pw.chars().count() {
-            let max_char = &self.pw.chars().nth(self.max-1).unwrap();
-            max_char_valid = max_char == character;
-        }
+        let min_char_valid = self.char_at_location_in_password(character, self.min-1);
+        let max_char_valid = self.char_at_location_in_password(character, self.max-1);
 
         return (min_char_valid) ^ (max_char_valid);
     }
