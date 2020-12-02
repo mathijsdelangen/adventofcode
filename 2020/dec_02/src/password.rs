@@ -16,21 +16,21 @@ impl Password {
     }
 
     pub fn valid_policy1(&self) -> bool {
-        let count = &self.pw.matches(&self.c).count();
-        return &self.min <= count && count <= &self.max;
+        let count = self.pw.matches(&self.c).count();
+        return self.min <= count && count <= self.max;
     }
 
-    fn char_at_location_in_password(&self, char_to_check: &char, location: usize) -> bool {
+    fn char_at_location_in_password(&self, char_to_check: char, location: usize) -> bool {
         if location >= self.pw.chars().count() { return false }
 
         let char_in_string = self.pw.chars().nth(location);
         match char_in_string {
-            Some(c) => return c == *char_to_check,
+            Some(c) => return c == char_to_check,
             _       => return false
         }
     }
     pub fn valid_policy2(&self) -> bool {
-        let character = &self.c.chars().nth(0).unwrap();
+        let character = self.c.chars().nth(0).unwrap();
         
         let min_char_valid = self.char_at_location_in_password(character, self.min-1);
         let max_char_valid = self.char_at_location_in_password(character, self.max-1);
