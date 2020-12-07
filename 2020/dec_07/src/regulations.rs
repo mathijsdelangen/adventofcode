@@ -30,9 +30,11 @@ impl Regulations {
         match self.bag_contents.get(&bag) {
             Some(allowed_contents) => 
             { 
-                if allowed_contents.contains(&bag_color) {result = true}
+                let mut contents = allowed_contents.to_owned();
+                contents.dedup();
+                if contents.contains(&bag_color) {result = true}
                 else {
-                    for content in allowed_contents {
+                    for content in contents {
                         result = result || self.can_contain(content.to_string(), bag_color.to_string());
                     }
                 }
@@ -41,5 +43,23 @@ impl Regulations {
         }
         
         return result;
+    }
+
+    pub fn contains_nr_bags(&self, bag: String) -> usize {
+        let mut count = 0;
+        
+        match self.bag_contents.get(&bag) {
+            Some(allowed_contents) => 
+            { 
+                //println!("{} contains {} bags", bag, allowed_contents.len());
+                for content in allowed_contents {
+                    count += self.contains_nr_bags(content.to_string());
+                }
+                count += allowed_contents.len();
+            }
+            None => (),
+        }
+        
+        return count;
     }
 }

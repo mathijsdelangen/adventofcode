@@ -22,13 +22,15 @@ fn parse_line(line: &str, mut regulations: regulations::Regulations) -> regulati
     
     let bag_contents = bag_info[1];
     match bag_contents { 
-        "no other bags" => (),
+        "no other bags." => (),
         _               => 
                         {
                             let allowed_bags_info : Vec<&str> = bag_contents.split(",").map(|l| l.trim()).collect();
                             for bag in allowed_bags_info {
-                                let (_, allowed_bag_color) = get_color_from_string(bag);
-                                regulations.add_bag_content(&bag_color, &allowed_bag_color);
+                                let (nr_bags, allowed_bag_color) = get_color_from_string(bag);
+                                for _ in 0..nr_bags {
+                                   regulations.add_bag_content(&bag_color, &allowed_bag_color);
+                                }
                                 
                             }
                         },
@@ -36,18 +38,23 @@ fn parse_line(line: &str, mut regulations: regulations::Regulations) -> regulati
     return regulations;
 }
 
-fn main() {
-    //  Parse regulations
-    let input = fs::read_to_string("assets/dec_07.in").expect("Something went wrong reading the file");
-    let input_lines : Vec<&str> = input.split("\n")
-                                       .map(|l| l.trim())
-                                       .collect();
-
+fn parse_regulations(input_lines: Vec<&str>) -> regulations::Regulations {
     let mut regulations = regulations::Regulations::new();
     for line in input_lines {
         regulations = parse_line(line, regulations);
     }
-    
+    return regulations;
+}
+
+fn find_solution1(input_file: &str) -> u32 {
+    //  Parse regulations
+    let input = fs::read_to_string(input_file).expect("Something went wrong reading the file");
+    let input_lines : Vec<&str> = input.split("\n")
+                                        .map(|l| l.trim())
+                                        .collect();
+
+    let regulations = parse_regulations(input_lines);
+
     // Find solution one
     let mut count = 0;
     for bag in regulations.get_known_bags() {
@@ -56,6 +63,39 @@ fn main() {
         }
     }
 
-    println!("Solution 1: {}", count);
+    return count;
 }
 
+fn find_solution2(input_file: &str) -> usize {
+    //  Parse regulations
+    let input = fs::read_to_string(input_file).expect("Something went wrong reading the file");
+    let input_lines : Vec<&str> = input.split("\n")
+                                        .map(|l| l.trim())
+                                        .collect();
+
+    let regulations = parse_regulations(input_lines);
+
+    return regulations.contains_nr_bags(String::from("shiny gold"));
+}
+
+fn main() {
+    
+    println!("Solution 1: {}", find_solution1("assets/dec_07.in"));
+    println!("Solution 2: {}", find_solution2("assets/dec_07.in"));
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_sol1(){
+        assert_eq!(4, find_solution1("assets/test_input_sol1.in"));
+    }
+
+    #[test]
+    fn validate_sol2(){
+        assert_eq!(126, find_solution2("assets/test_input_sol2.in"));
+    }
+}
