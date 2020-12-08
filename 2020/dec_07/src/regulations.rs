@@ -10,8 +10,8 @@ impl Regulations {
         Regulations { known_bags:vec![], bag_contents:HashMap::new()}
     }
 
-    pub fn get_known_bags(&self) -> Vec<String> {
-        return self.known_bags.to_owned();
+    pub fn get_known_bags(&self) -> &Vec<String> {
+        return &self.known_bags;
     }
 
     pub fn add_bag(&mut self, bag_color: &str) {
@@ -25,9 +25,9 @@ impl Regulations {
         self.bag_contents.get_mut(&String::from(bag_color)).unwrap().push(String::from(content));
     }
 
-    pub fn can_contain(&self, bag: String, bag_color: String) -> bool {
+    pub fn can_contain(&self, bag: &String, bag_color: String) -> bool {
         let mut result = false;
-        match self.bag_contents.get(&bag) {
+        match self.bag_contents.get(bag) {
             Some(allowed_contents) => 
             { 
                 let mut contents = allowed_contents.to_owned();
@@ -35,7 +35,7 @@ impl Regulations {
                 if contents.contains(&bag_color) {result = true}
                 else {
                     for content in contents {
-                        result = result || self.can_contain(content.to_string(), bag_color.to_string());
+                        result = result || self.can_contain(&content.to_string(), bag_color.to_string());
                     }
                 }
             },

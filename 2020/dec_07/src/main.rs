@@ -38,7 +38,14 @@ fn parse_line(line: &str, mut regulations: regulations::Regulations) -> regulati
     return regulations;
 }
 
-fn parse_regulations(input_lines: Vec<&str>) -> regulations::Regulations {
+fn parse_regulations(input_file: &str) -> regulations::Regulations {
+
+    //  Parse regulations
+    let input = fs::read_to_string(input_file).expect("Something went wrong reading the file");
+    let input_lines : Vec<&str> = input.split("\n")
+                                        .map(|l| l.trim())
+                                        .collect();
+
     let mut regulations = regulations::Regulations::new();
     for line in input_lines {
         regulations = parse_line(line, regulations);
@@ -47,13 +54,7 @@ fn parse_regulations(input_lines: Vec<&str>) -> regulations::Regulations {
 }
 
 fn find_solution1(input_file: &str) -> u32 {
-    //  Parse regulations
-    let input = fs::read_to_string(input_file).expect("Something went wrong reading the file");
-    let input_lines : Vec<&str> = input.split("\n")
-                                        .map(|l| l.trim())
-                                        .collect();
-
-    let regulations = parse_regulations(input_lines);
+    let regulations = parse_regulations(input_file);
 
     // Find solution one
     let mut count = 0;
@@ -67,21 +68,15 @@ fn find_solution1(input_file: &str) -> u32 {
 }
 
 fn find_solution2(input_file: &str) -> usize {
-    //  Parse regulations
-    let input = fs::read_to_string(input_file).expect("Something went wrong reading the file");
-    let input_lines : Vec<&str> = input.split("\n")
-                                        .map(|l| l.trim())
-                                        .collect();
-
-    let regulations = parse_regulations(input_lines);
+    let regulations = parse_regulations(input_file);
 
     return regulations.contains_nr_bags(String::from("shiny gold"));
 }
 
 fn main() {
-    
-    println!("Solution 1: {}", find_solution1("assets/dec_07.in"));
-    println!("Solution 2: {}", find_solution2("assets/dec_07.in"));
+    let input = "assets/dec_07.in";
+    println!("Solution 1: {}", find_solution1(input));
+    println!("Solution 2: {}", find_solution2(input));
 }
 
 
