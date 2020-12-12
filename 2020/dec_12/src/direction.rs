@@ -2,53 +2,54 @@
 pub struct Location {
     pub north: i32,
     pub east: i32,
-    heading: char,
 }
 
 impl Location {
-    pub fn new(north: i32, east: i32, heading: char) -> Location {
+    pub fn new(north: i32, east: i32) -> Location {
         Location {
             north: north,
-            east: east,
-            heading: heading,
+            east: east
         }
     }
 
-    pub fn calculate_new_heading(&self, instruction: &Instruction) -> char {
-        println!("Rotate {} with {} degrees", instruction.direction, instruction.units);
-        let turn = instruction.direction;
+    pub fn rotate(&self, instruction: &Instruction) -> Location {
         let nr_turns = instruction.units / 90;
-        println!(" so rotate {} times", nr_turns);
-        let mut heading = self.heading;
+        let mut location = Location::new(self.north, self.east);
         for _ in 0..nr_turns {
-            match heading {
-                'N' => if turn == 'L' {heading = 'W'} else {heading = 'E'},
-                'E' => if turn == 'L' {heading = 'N'} else {heading = 'S'},
-                'S' => if turn == 'L' {heading = 'E'} else {heading = 'W'},
-                'W' => if turn == 'L' {heading = 'S'} else {heading = 'N'},
+            match instruction.direction {
+                'R' => {
+                    let temp = location.east;
+                    location.east = location.north;
+                    location.north = -temp;
+                },
+                'L' => {
+                    let temp = location.east;
+                    location.east = -location.north;
+                    location.north = temp;
+                },
                 _   => panic!("Heading unknown"),
             }
         }
-        return heading
+        return location;
     }
 
     pub fn calculate_new_location(&self, instruction: &Instruction) -> Location {
         match instruction.direction {
-            'N' => return Location::new(self.north+instruction.units, self.east, self.heading),
-            'S' => return Location::new(self.north-instruction.units, self.east, self.heading),
-            'E' => return Location::new(self.north, self.east+instruction.units, self.heading),
-            'W' => return Location::new(self.north, self.east-instruction.units, self.heading),
-            'L' => return Location::new(self.north, self.east, self.calculate_new_heading(&instruction)),
-            'R' => return Location::new(self.north, self.east, self.calculate_new_heading(&instruction)),
-            'F' => return self.calculate_new_location(&Instruction::new(self.heading, instruction.units)),
+            'N' => return Location::new(self.north+instruction.units, self.east),
+            'S' => return Location::new(self.north-instruction.units, self.east),
+            'E' => return Location::new(self.north, self.east+instruction.units),
+            'W' => return Location::new(self.north, self.east-instruction.units),
+            'L' => return self.rotate(&instruction),
+            'R' => return self.rotate(&instruction),
+            'F' => panic!("'F' is not a valid instruction anymore"),
             _   => panic!("Direction unknown"),
         }
     }
 }
 
 pub struct Instruction {
-    direction: char,
-    units: i32,
+    pub direction: char,
+    pub units: i32,
 }
 
 impl Instruction {
@@ -65,6 +66,4 @@ impl Instruction {
             units: units.parse::<i32>().unwrap(), //units,
         }
     }
-
-
 }

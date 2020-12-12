@@ -10,19 +10,26 @@ fn parse_input(input_file: &str) -> Vec<direction::Instruction> {
     return input_lines;
 }
 
-fn find_manhattan_distance(directions: Vec<direction::Instruction>) -> i32 {
+fn find_manhattan_distance(instructions: Vec<direction::Instruction>) -> i32 {
     
-    let mut current_location = direction::Location::new(0,0,'E');
-    for direction in directions {
-        current_location = current_location.calculate_new_location(&direction);
+    let mut ship_location = direction::Location::new(0,0);
+    let mut waypoint_location = direction::Location::new(1,10);
+    for instruction in instructions {
+        match instruction.direction {
+            'F' => {
+                ship_location.north += waypoint_location.north * instruction.units;
+                ship_location.east += waypoint_location.east * instruction.units;
+            }
+            _ => waypoint_location = waypoint_location.calculate_new_location(&instruction),
+        }
     }
-    return current_location.north.abs() + current_location.east.abs();
+    return ship_location.north.abs() + ship_location.east.abs();
 }
 
 fn main() {
     let input_file = "assets/dec_12.in";
 
-    println!("Solution 1: {}", find_manhattan_distance(parse_input(input_file)));
+    println!("Solution 2: {}", find_manhattan_distance(parse_input(input_file)));
 }
 
 #[cfg(test)]
@@ -31,6 +38,7 @@ mod tests {
     
     #[test]
     fn validate_example() {
-        assert_eq!(25, find_manhattan_distance(parse_input("assets/dec_12_example.in")));
+        assert_eq!(286, find_manhattan_distance(parse_input("assets/dec_12_example.in")));
+        assert_eq!(89984, find_manhattan_distance(parse_input("assets/dec_12.in")));
     }
 }
