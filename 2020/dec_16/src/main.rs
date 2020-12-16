@@ -43,13 +43,12 @@ fn parse_input(input_file: &str) -> TicketInput {
 }
 
 fn is_valid_in_ranges(value: u32, ranges: &AllowedRanges) -> bool {  
-
     return ranges.iter().any(|r| r.contains(&value));
 }
 
 fn get_all_valid_ranges(rules: &TicketRules) -> AllowedRanges {
     let mut ranges = Vec::new();
-    for (_, valid_ranges) in rules {
+    for valid_ranges in rules.values() {
         for range in valid_ranges {
             ranges.push(*range.start()..=*range.end());
         }
@@ -83,7 +82,6 @@ fn determine_fields(ticket_rules: &TicketRules, nearby_tickets: Vec<&Ticket>) ->
     while remaining_fields.len() > 0 {
         println!("{} remaining fields left", remaining_fields.len());
         for field_location in 0..nearby_tickets[0].len() {
-            if fields[field_location] != "" { continue; }
             println!("Determine field location {}", field_location);
             let mut nr_possibilities = 0;
             let mut last_field_found = "";
@@ -114,9 +112,9 @@ fn main() {
     let fields = determine_fields(&info.0, valid_tickets);
     let mut result : u128 = 1;
 
-    for i in 0..fields.len() {
-        if fields[i].starts_with("departure") {
-            println!("Field@{} = {}", i, fields[i]);
+    for (i, field) in fields.iter().enumerate() {
+        if field.starts_with("departure") {
+            println!("Field@{} = {}", i, field);
             result *= info.1[i] as u128;
         }
     }
