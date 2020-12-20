@@ -7,7 +7,7 @@ fn parse_input(input_file: &str) -> Vec<puzzle::Tile> {
     return tile_descriptions.iter().map(|d| puzzle::Tile::from_str(d)).collect();
 }
 
-fn determine(tiles: Vec<puzzle::Tile>) -> u128 {
+fn determine_corners(tiles: Vec<puzzle::Tile>) -> u128 {
     let mut result = 1u128;
     for tile_a in &tiles {
         let mut num_tiles_matching_border = 0;
@@ -20,7 +20,7 @@ fn determine(tiles: Vec<puzzle::Tile>) -> u128 {
         }
         println!("Tile {} has {} matching borders", tile_a.id, num_tiles_matching_border);
         if num_tiles_matching_border == 2 {
-            result *= (tile_a.id as u128);
+            result *= tile_a.id as u128;
         }
     }
     return result;
@@ -29,7 +29,7 @@ fn determine(tiles: Vec<puzzle::Tile>) -> u128 {
 fn main() {
     let input_file = "assets/dec_20.in";
 
-    println!("Solution: {}", determine(parse_input(input_file)) );
+    println!("Solution: {}", determine_corners(parse_input(input_file)) );
 }
 
 #[cfg(test)]
@@ -39,6 +39,6 @@ mod tests {
     #[test]
     fn validate_example(){
         let input_file = "assets/dec_20_example.in";
-        assert_eq!(20899048083289, determine(parse_input(input_file)));
+        assert_eq!(20899048083289, determine_corners(parse_input(input_file)));
     }
 }
