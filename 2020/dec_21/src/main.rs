@@ -19,14 +19,11 @@ fn difference(first: &Vec<String>, second: &Vec<String>) -> Vec<String> {
     return new_list;
 }
 
-
 fn find_solution(input_file: &str) -> Vec<String> {
     let input = fs::read_to_string(input_file).expect("Something went wrong reading the file");
-
     let input_lines : Vec<&str> = input.split("\r\n").collect();
-    let mut possible_ingredients_with_allergen : HashMap<String, Vec<String>> = HashMap::new();
 
-    let mut all_ingredients : Vec<String> = Vec::new();
+    let mut possible_ingredients_with_allergen : HashMap<String, Vec<String>> = HashMap::new();
 
     for l in &input_lines {
         let line = l.replace(")","");
@@ -41,8 +38,6 @@ fn find_solution(input_file: &str) -> Vec<String> {
                                                    .map(|l| l.trim())
                                                    .map(|l| l.to_string())
                                                    .collect();
-
-        all_ingredients.append(ingredients.to_owned().as_mut());
 
         for allergen in allergens {
             // If exists, check which ingredients are the same
