@@ -83,9 +83,9 @@ fn main() {
     println!("Solution 1: {}", ordered_cups_to_string(&simulate_moves(&input, 100)));
 
     // Extend list for part 2
-    let rest_of_inputs : Vec<usize> = (10..=1000000).map(|x| x).collect();
+    let rest_of_inputs : Vec<usize> = (10..=1_000_000).map(|x| x).collect();
     input.extend(rest_of_inputs);
-    println!("Solution 2: {}", solution2_from_result(&simulate_moves(&input, 10000000)));
+    println!("Solution 2: {}", solution2_from_result(&simulate_moves(&input, 10_000_000)));
 }
 
 #[cfg(test)]
