@@ -1,66 +1,91 @@
-fn simulate_move(cups : &Vec<usize>, cup_idx: usize) -> Vec<usize> {
-    let mut new_cups = cups.to_owned();
-    let mut removed_cups : Vec<usize> = Vec::new();
-    let current_cup = new_cups[cup_idx];
-    println!("Current cup: {}", current_cup);
-    
-    // Remove 3 cups after cup_idx
-    for _ in 0..3 {
-        if cup_idx < new_cups.len() {
-            println!(" Remove cup {} at index {}", new_cups[(cup_idx+1) % new_cups.len()], (cup_idx+1) % new_cups.len());
-            removed_cups.push(new_cups.remove((cup_idx+1) % new_cups.len())); 
-        }    else {
-            println!(" Remove cup {} at index {}", new_cups[0], 0);
-            removed_cups.push(new_cups.remove(0));
-        }
+fn calculate_destination_cup(cup: usize, max_element: usize) -> usize {
+    assert_ne!(cup, 0);
+    return if cup == 1 { max_element } else { cup-1 };
+}
+
+fn simulate_move(cups : &mut Vec<usize>, current_cup: &mut usize) {
+    // Store the three elements next to the current cup
+    let next_cup_1 = cups[*current_cup];
+    let next_cup_2 = cups[next_cup_1];
+    let next_cup_3 = cups[next_cup_2];
+    let new_neighbor = cups[next_cup_3];
+
+    // Determine destination cup
+    let mut destination_cup = calculate_destination_cup(*current_cup, cups.len()-1);
+    while destination_cup == next_cup_1 || destination_cup == next_cup_2 || destination_cup == next_cup_3 {
+        destination_cup = calculate_destination_cup(destination_cup, cups.len()-1);
     }
 
-    // Find destination cup
-    let mut destination_cup = (current_cup+cups.len()) % (cups.len()+1);
-    while !new_cups.contains(&destination_cup) {
-        destination_cup = (destination_cup+cups.len()) % (cups.len()+1);
-    }
+    // Update current cup
+    cups[*current_cup] = new_neighbor;
 
-    // Find index of destination cup
-    let mut index = new_cups.iter().position(|&p| p == destination_cup).unwrap();
-    println!("Insert at index {} ({})", index, new_cups[index]);
-    // Add removed cups after destiation cup
-    for cup in removed_cups {
-        index += 1;
-        new_cups.insert(index, cup);
-    }
+    // Update destination cup
+    let dest_neighbor = cups[destination_cup];
+    cups[destination_cup] = next_cup_1;
+    cups[next_cup_3] = dest_neighbor;
 
-    return new_cups;
+    // Update current cup
+    *current_cup = new_neighbor;
+}
+
+fn from_input_to_cups(starting_cups : &Vec<usize>) -> Vec<usize> {
+    // We store the right neigbor for each cup. 
+    // So for input [1,4,2,3] this means 
+    // 1 points to 4, 
+    // 2 points to 3,
+    // 3 points to 1, 
+    // 4 points to 2, 
+    // resulting in the following array:
+    // [0,4,3,1,2]
+    // (we keep the zero for easier indexing)
+
+    let mut cups = vec![0;starting_cups.len()+1];
+    for i in 0..starting_cups.len()-1 {
+        cups[starting_cups[i]] = starting_cups[i+1];
+    }
+    cups[starting_cups[starting_cups.len()-1]] = starting_cups[0];
+    return cups;
 }
 
 fn simulate_moves(starting_cups : &Vec<usize>, nr_moves: usize) -> Vec<usize> {
     println!("Simulate {} moves", nr_moves);
-    let mut cups = starting_cups.to_owned();
+
     let mut current_cup = starting_cups[0];
+    let mut cups = from_input_to_cups(&starting_cups.to_owned());
 
     for _ in 0..nr_moves {
-        let current_cup_index = cups.iter().position(|&p| p == current_cup).unwrap();
-        cups = simulate_move(&cups, current_cup_index);
-
-        let current_cup_index = cups.iter().position(|&p| p == current_cup).unwrap();
-        current_cup = cups[(current_cup_index+1) % cups.len()];
+        simulate_move(&mut cups, &mut current_cup);
     }
     return cups;
 }
 
-fn labels_to_solution(labels : &Vec<usize>) -> String {
-    // Find index of label 1
-    let index = labels.iter().position(|&p| p == 1).unwrap();
-    let first_part = labels[index+1..].iter().map(|i| i.to_string()).collect::<String>();
-    let second_part = labels[..index].iter().map(|i| i.to_string()).collect::<String>();
+fn ordered_cups(cups : &Vec<usize>) -> Vec<usize> {
+    let mut ordered_values = Vec::new();
+    let mut c = cups[1];
+    loop {
+        if c == 1 { break; }
+        ordered_values.push(c);
+        c = cups[c];
+    }
+    return ordered_values;
+}
 
-    return first_part + &second_part;
+fn ordered_cups_to_string(cups : &Vec<usize>) -> String {
+    return ordered_cups(cups).iter().map(|i| i.to_string()).collect::<String>();
+}
+
+fn solution2_from_result(cups : &Vec<usize>) -> u64 {
+    return (cups[1]*cups[cups[1]]) as u64;
 }
 
 fn main() {
-    let input : Vec<usize> = vec![2,5,3,1,4,9,8,6,7];
-    let labels = simulate_moves(&input, 100);
-    println!("Solution: {}", labels_to_solution(&labels));
+    let mut input : Vec<usize> = Vec::from(vec![2,5,3,1,4,9,8,6,7]);
+    println!("Solution 1: {}", ordered_cups_to_string(&simulate_moves(&input, 100)));
+
+    // Extend list for part 2
+    let rest_of_inputs : Vec<usize> = (10..=1000000).map(|x| x).collect();
+    input.extend(rest_of_inputs);
+    println!("Solution 2: {}", solution2_from_result(&simulate_moves(&input, 10000000)));
 }
 
 #[cfg(test)]
@@ -69,32 +94,33 @@ mod tests {
     
     #[test]
     fn validate_steps() {
-        let input : Vec<usize> = vec![3,8,9,1,2,5,4,6,7];
-        assert_eq!(vec![3,2,8,9,1,5,4,6,7], simulate_moves(&input, 1));
-        assert_eq!(vec![3,2,5,4,6,7,8,9,1], simulate_moves(&input, 2));
-        assert_eq!(vec![3,4,6,7,2,5,8,9,1], simulate_moves(&input, 3));
-        assert_eq!(vec![4,6,7,9,1,3,2,5,8], simulate_moves(&input, 4));
-        assert_eq!(vec![4,1,3,6,7,9,2,5,8], simulate_moves(&input, 5));
-        assert_eq!(vec![4,1,9,3,6,7,2,5,8], simulate_moves(&input, 6));
-    }
-
-    #[test]
-    fn validate_labels_to_solution() {
-        let input : Vec<usize> = vec![3,8,9,1,2,5,4,6,7];
-        assert_eq!("25467389", labels_to_solution(&input));
+        let input : Vec<usize> = Vec::from(vec![3,8,9,1,2,5,4,6,7]);
+        assert_eq!("54673289", ordered_cups_to_string(&simulate_moves(&input, 1)));
+        assert_eq!("32546789", ordered_cups_to_string(&simulate_moves(&input, 2)));
+        assert_eq!("34672589", ordered_cups_to_string(&simulate_moves(&input, 3)));
+        assert_eq!("32584679", ordered_cups_to_string(&simulate_moves(&input, 4)));
+        assert_eq!("36792584", ordered_cups_to_string(&simulate_moves(&input, 5)));
+        assert_eq!("93672584", ordered_cups_to_string(&simulate_moves(&input, 6)));
     }
 
     #[test]
     fn validate_example_10_moves() {
-        let input : Vec<usize> = vec![3,8,9,1,2,5,4,6,7];
-        let labels = simulate_moves(&input, 10);
-        assert_eq!("92658374", labels_to_solution(&labels));
+        let input : Vec<usize> = Vec::from(vec![3,8,9,1,2,5,4,6,7]);
+        assert_eq!("92658374", ordered_cups_to_string(&simulate_moves(&input, 10)));
     }
 
     #[test]
     fn validate_example() {
-        let input : Vec<usize> = vec![3,8,9,1,2,5,4,6,7];
-        let labels = simulate_moves(&input, 100);
-        assert_eq!("67384529", labels_to_solution(&labels));
+        let input : Vec<usize> = Vec::from(vec![3,8,9,1,2,5,4,6,7]);
+        assert_eq!("67384529", ordered_cups_to_string(&simulate_moves(&input, 100)));
+    }
+
+    #[test]
+    fn validate_example2() {
+        let mut input : Vec<usize> = Vec::from(vec![3,8,9,1,2,5,4,6,7]);
+        let rest_of_inputs : Vec<usize> = (10..=1_000_000).map(|x| x).collect();
+        input.extend(rest_of_inputs);
+
+        assert_eq!(149245887792, solution2_from_result(&simulate_moves(&input, 10_000_000)));
     }
 }
