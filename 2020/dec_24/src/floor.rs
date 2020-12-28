@@ -1,6 +1,7 @@
 use std::fmt;
+use std::cmp::Ordering;
 
-#[derive(PartialEq, PartialOrd)]
+#[derive(PartialEq, PartialOrd, Eq)]
 #[derive(Clone, Copy)]
 pub struct Tile {
     pub east: i32, // vs west
@@ -15,6 +16,12 @@ impl fmt::Debug for Tile {
          .field("north east", &self.north_east)
          .field("south east", &self.south_east)
          .finish()
+    }
+}
+
+impl Ord for Tile {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (self.east, self.north_east, self.south_east).cmp(&(other.east, other.north_east, other.south_east))
     }
 }
 
@@ -52,57 +59,60 @@ impl Tile {
             i += 1;
         }
 
-        // Postprocess
-        if north_east > 0 && south_east > 0 {
-            let min_val = std::cmp::min(north_east, south_east);
-            north_east -= min_val;
-            south_east -= min_val;
-            east += min_val;
+        let mut tile = Tile { east:east, north_east:north_east, south_east:south_east };
+        tile.rescale();
+        return tile;
+    }
+
+    pub fn rescale(&mut self) {
+        if self.north_east > 0 && self.south_east > 0 {
+            let min_val = std::cmp::min(self.north_east, self.south_east);
+            self.north_east -= min_val;
+            self.south_east -= min_val;
+            self.east += min_val;
         }
 
-        if north_east < 0 && south_east < 0 {
-            let min_val = std::cmp::max(north_east, south_east);
-            north_east -= min_val;
-            south_east -= min_val;
-            east += min_val;
+        if self.north_east < 0 && self.south_east < 0 {
+            let min_val = std::cmp::max(self.north_east, self.south_east);
+            self.north_east -= min_val;
+            self.south_east -= min_val;
+            self.east += min_val;
         }
 
-        if east > 0 {
-            if north_east < 0 {
-                let min_val = std::cmp::min((north_east as i32).abs(), east);
-                east -= min_val;
-                south_east += min_val;
+        if self.east > 0 {
+            if self.north_east < 0 {
+                let min_val = std::cmp::min((self.north_east as i32).abs(), self.east);
+                self.east -= min_val;
+                self.south_east += min_val;
 
-                north_east += min_val;
+                self.north_east += min_val;
             } 
-            if south_east < 0 {
-                let min_val = std::cmp::min((south_east as i32).abs(), east);
-                east -= min_val;
-                north_east += min_val;
+            if self.south_east < 0 {
+                let min_val = std::cmp::min((self.south_east as i32).abs(), self.east);
+                self.east -= min_val;
+                self.north_east += min_val;
 
-                south_east += min_val;
+                self.south_east += min_val;
             }
         }
 
-        if east < 0 {
-            if north_east > 0 {
-                let min_val = std::cmp::min(north_east, (east as i32).abs());
-                east += min_val;
-                south_east -= min_val;
+        if self.east < 0 {
+            if self.north_east > 0 {
+                let min_val = std::cmp::min(self.north_east, (self.east as i32).abs());
+                self.east += min_val;
+                self.south_east -= min_val;
 
-                north_east -= min_val;
+                self.north_east -= min_val;
 
             } 
-            if south_east > 0 {
-                let min_val = std::cmp::min(south_east, (east as i32).abs());
-                east += min_val;
-                north_east -= min_val;
+            if self.south_east > 0 {
+                let min_val = std::cmp::min(self.south_east, (self.east as i32).abs());
+                self.east += min_val;
+                self.north_east -= min_val;
 
-                south_east -= min_val;
+                self.south_east -= min_val;
             }
         }
-   
-        return Tile { east:east, north_east:north_east, south_east:south_east };
     }
 }
 
@@ -128,6 +138,5 @@ mod tests {
 
         assert_eq!(Tile::from_str("eeenw"), Tile::from_str("eene"));
         assert_eq!(Tile::from_str("eeesw"), Tile::from_str("eese"));
-        
     }
 }
