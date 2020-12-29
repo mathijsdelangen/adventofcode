@@ -54,7 +54,6 @@ fn get_tile(id: u32, tiles: Vec<&puzzle::Tile>) -> &puzzle::Tile {
     panic!("No tile found")
 }
 
-
 fn print_puzzle(puzzle_solution: &[[u32;12];12]) {
     for a in puzzle_solution {
         for b in a { 
@@ -212,8 +211,6 @@ fn solve_puzzle_tiles(puzzle_positions: &[[u32;12];12], tile_list: Vec<puzzle::T
                     println!("Common border between pos1 and right is ({},{})", common_border.0, common_border.1);
                     println!("Tile should rotate {} (X -> 0) times", nr_rotations_needed(common_border.0, 0));
                     for _ in 0..nr_rotations_needed(common_border.0, 0) { println!("Rotate");tile.rotate() }
-                    //println!("Neighbor should rotate {} (X -> 2) times", nr_rotations_needed(common_border.1, 2));
-                    //for _ in 0..nr_rotations_needed(common_border.1, 2) { neighbor.rotate() }
 
                     // Find common border with piece below this one
                     let common_border = puzzle::Tile::find_common_border(&tile, &neighbor_below);
@@ -263,7 +260,6 @@ fn print_solved_puzzle(tiles: &Vec<Vec<puzzle::Tile>>) {
     for line_with_tiles in tiles {
         if line_with_tiles.len() > 0 {
             for idx in 1..line_with_tiles[0].tile_description.len()-1 {
-                let mut puzzle_line : Vec<String>;
                 for tile in line_with_tiles {
                     print!("{}",tile.tile_description[idx][1..tile.tile_description[idx].len()-1].to_string());
                 }
@@ -297,16 +293,14 @@ fn has_seamonster_pattern(line1: &str, line2: &str, line3: &str) -> bool {
     line3.chars().nth(16).unwrap() == '#';
 }
 
-fn image_contains_seamonters(image: &Vec<String>) -> bool {
+fn count_seamonsters(image: &Vec<String>) -> u32 {
+    let mut result = 0;
     for idx in 0..image.len()-2 {
-        //println!("Checking image @ idx={}", idx);
-        // Find sea monster pattern
         for loc in 0..image[idx].len()-19 {
-            //println!("Checking image @loc={}", loc);
-            if has_seamonster_pattern(&image[idx][loc..loc+20], &image[idx+1][loc..loc+20], &image[idx+2][loc..loc+20]) { println!("Found seamonster!"); return true;}
+            if has_seamonster_pattern(&image[idx][loc..loc+20], &image[idx+1][loc..loc+20], &image[idx+2][loc..loc+20]) { println!("Found seamonster!"); result += 1}
         }
     }
-    return false;
+    return result;
 }
 
 fn flip_image(image: &Vec<String>) -> Vec<String> {
@@ -329,7 +323,6 @@ fn rotate_image(image: &Vec<String>) -> Vec<String> {
 }
 
 fn main() {   
-    /*
     let input_file = "assets/dec_20.in";
     let tiles = parse_input(input_file);
     println!("Solution: {}", determine_corners(&tiles) );
@@ -343,34 +336,38 @@ fn main() {
     println!("Solved tiles length: {}", solved_tiles.len());
     print_puzzle_tiles(&solved_tiles);
     print_solved_puzzle(&solved_tiles);
-    */
 
     let solved_image_input = fs::read_to_string("assets/puzzle_output").expect("Something went wrong reading the file");
     let solved_image : Vec<&str> = solved_image_input.split("\r\n").collect();
 
     let image : Vec<String> = solved_image.iter().map(|&l| l.to_string()).collect();
-    image_contains_seamonters(&image);
-    image_contains_seamonters(&rotate_image(&image));
-    image_contains_seamonters(&rotate_image(&rotate_image(&image)));
-    image_contains_seamonters(&rotate_image(&rotate_image(&rotate_image(&image))));
-    image_contains_seamonters(&rotate_image(&rotate_image(&rotate_image(&rotate_image(&image)))));
+    let mut nr_seamonsters = 0;
+    let cnt = count_seamonsters(&image);
+    if cnt > 0 { nr_seamonsters = cnt }
+    let cnt = count_seamonsters(&rotate_image(&image));
+    if cnt > 0 { nr_seamonsters = cnt }
+    let cnt = count_seamonsters(&rotate_image(&rotate_image(&image)));
+    if cnt > 0 { nr_seamonsters = cnt }
+    let cnt = count_seamonsters(&rotate_image(&rotate_image(&rotate_image(&image))));
+    if cnt > 0 { nr_seamonsters = cnt }
+    let cnt = count_seamonsters(&rotate_image(&rotate_image(&rotate_image(&rotate_image(&image)))));
+    if cnt > 0 { nr_seamonsters = cnt }
 
     let flipped_image = flip_image(&image);
-    image_contains_seamonters(&flipped_image);
-    image_contains_seamonters(&rotate_image(&flipped_image));
-    image_contains_seamonters(&rotate_image(&rotate_image(&flipped_image)));
-    image_contains_seamonters(&rotate_image(&rotate_image(&rotate_image(&flipped_image))));
-    image_contains_seamonters(&rotate_image(&rotate_image(&rotate_image(&rotate_image(&flipped_image)))));
+    let cnt = count_seamonsters(&flipped_image);
+    if cnt > 0 { nr_seamonsters = cnt }
+    let cnt = count_seamonsters(&rotate_image(&flipped_image));
+    if cnt > 0 { nr_seamonsters = cnt }
+    let cnt = count_seamonsters(&rotate_image(&rotate_image(&flipped_image)));
+    if cnt > 0 { nr_seamonsters = cnt }
+    let cnt = count_seamonsters(&rotate_image(&rotate_image(&rotate_image(&flipped_image))));
+    if cnt > 0 { nr_seamonsters = cnt }
+    let cnt = count_seamonsters(&rotate_image(&rotate_image(&rotate_image(&rotate_image(&flipped_image)))));
+    if cnt > 0 { nr_seamonsters = cnt }
 
-    let flipped_rotated_image = flip_image(&rotate_image(&image));
-    image_contains_seamonters(&flipped_rotated_image);
-    image_contains_seamonters(&rotate_image(&flipped_rotated_image));
-    image_contains_seamonters(&rotate_image(&rotate_image(&flipped_rotated_image)));
-    image_contains_seamonters(&rotate_image(&rotate_image(&rotate_image(&flipped_rotated_image))));
-    image_contains_seamonters(&rotate_image(&rotate_image(&rotate_image(&rotate_image(&flipped_rotated_image)))));
+    let res : usize = solved_image.iter().map(|l| l.chars().filter(|&c| c == '#').count()).sum();
 
-    //let puzzle_lines : Vec<String> = puzzle.iter().map(|l| l.join("")).collect();
-    //println!("Solved puzzle:\r\n{}", puzzle_lines.join("\r\n"));
+    println!("Solution: {}", res as u32 - nr_seamonsters * 15);   
 }
 
 #[cfg(test)]
@@ -392,7 +389,7 @@ mod tests {
         ];
         let image : Vec<String> = solved_image.iter().map(|&l| l.to_string()).collect();
 
-        assert_eq!(true, image_contains_seamonters(&image));
+        assert_eq!(1, count_seamonsters(&image));
 
         let solved_image = [
             "##############...........#",
@@ -404,6 +401,6 @@ mod tests {
 
         let image : Vec<String> = solved_image.iter().map(|&l| l.to_string()).collect();
 
-        assert_eq!(true, image_contains_seamonters(&image));
+        assert_eq!(1, count_seamonsters(&image));
     }
 }
