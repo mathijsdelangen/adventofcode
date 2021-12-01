@@ -2,11 +2,7 @@ import os
 import pathlib
 
 def ReadFile(file):
-  f = open(os.path.join(pathlib.Path(__file__).parent.resolve(),file), 'r')
-  lines = f.read().splitlines() 
-  lines_as_int = [int(i) for i in lines]
-  f.close()
-  return lines_as_int
+  return [int(x) for x in open(os.path.join(pathlib.Path(__file__).parent.resolve(),file), 'r').read().splitlines()]
 
 def CalculateSolution(depths):
   count = 0
