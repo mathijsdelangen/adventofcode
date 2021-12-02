@@ -7,14 +7,21 @@ def readfile(file):
 def readinput():
   return readfile("input.in")
 
-def solution(depths):
+def solution1(depths):
+  return calculate_solution(depths, 1)
+
+def solution2(depths):
+  return calculate_solution(depths, 3)
+
+def calculate_solution(depths, measurements):
   count = 0
-  for i in range(3, len(depths)):
-    if depths[i]+depths[i-1]+depths[i-2] > depths[i-1]+depths[i-2]+depths[i-3]:
+  for i in range(measurements, len(depths)):
+    if depths[i] > depths[i-measurements]:
       count += 1
 
   return count
 
 if __name__ == '__main__':
-  sol = solution(readinput())
-  print(f"Total number of depth increases: {sol}")
+  data = readinput()
+  print(f"Solution 1: {solution1(data)}")
+  print(f"Solution 2: {solution2(data)}")
