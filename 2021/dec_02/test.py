@@ -7,11 +7,11 @@ class TestMethods(unittest.TestCase):
     self.data = readfile("example.in")
 
   def test_example1(self):
-    self.assertEqual(solution(self.data),150)
+    self.assertTrue
+    #self.assertEqual(solution(self.data),150)
 
   def test_example2(self):
-    self.assertTrue
-    #self.assertEqual(solution(self.data),"")
+    self.assertEqual(solution(self.data), 900)
 
 if __name__ == '__main__':
   unittest.main()

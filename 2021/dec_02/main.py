@@ -9,16 +9,18 @@ def readinput():
   return readfile("input.in")
 
 def solution(data):
+  aim = 0
   pos = 0
   depth = 0
   
   for instruction, val in data:
     if instruction == "forward":
       pos += val
+      depth += val * aim
     if instruction == "down":
-      depth += val
+      aim += val
     if instruction == "up":
-      depth -= val
+      aim -= val
 
   return pos * depth
 
