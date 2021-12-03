@@ -13,9 +13,6 @@ def solution1(data):
 def solution2(data):
   return data
 
-def calculate_solution(data):
-  return data
-
 if __name__ == '__main__':
   data = readinput()
   print(f"Solution 1: {solution1(data)}")
