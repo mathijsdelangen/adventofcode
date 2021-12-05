@@ -25,8 +25,7 @@ class TestMethods(unittest.TestCase):
     self.assertEqual(solution1(self.data), 4512)
 
   def test_example2(self):
-    self.assertTrue
-    #self.assertEqual(solution2(self.data), "")
+    self.assertEqual(solution2(self.data), 1924)
 
 if __name__ == '__main__':
   unittest.main()

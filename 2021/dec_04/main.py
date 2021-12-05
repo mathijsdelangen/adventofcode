@@ -5,16 +5,7 @@ class Board():
   def __init__(self, values, size = 5):
     self.board_size = size
     self.values = values
-  
-  def get_values(self):
-    return self.values
-
-  def remove_value(self, value):
-    for i in range(0, self.board_size):
-      for j in range(0, self.board_size):
-        if self.values[i][j] == value:
-          self.values[i][j] = -1
-    pass
+    self.skip = False
 
   def has_bingo(self):
     # Check horizontal
@@ -29,6 +20,19 @@ class Board():
         return True
 
     return False
+    
+  def remove_value(self, value):
+    for i in range(0, self.board_size):
+      for j in range(0, self.board_size):
+        if self.values[i][j] == value:
+          self.values[i][j] = -1
+    pass
+    
+  def skip_me(self):
+    return self.skip
+    
+  def set_skip(self):
+    self.skip = True
 
   def sum_all(self):
     sum = 0
@@ -65,9 +69,23 @@ def solution1(data):
         return board.sum_all() * bingo_nr
 
 def solution2(data):
-  return data
+  list_sequence, boards = data
+  
+  nr_winners = 0
+  number_of_boards = len(boards)
+  for bingo_nr in list_sequence:
+    for board in boards:
+      if board.skip_me():
+        continue
+      board.remove_value(bingo_nr)
+      if board.has_bingo():
+        nr_winners += 1
+        if nr_winners == number_of_boards:
+          return board.sum_all() * bingo_nr
+        else:
+          board.set_skip()
 
 if __name__ == '__main__':
   data = readinput()
   print(f"Solution 1: {solution1(data)}")
-  #print(f"Solution 2: {solution2(data)}")
+  print(f"Solution 2: {solution2(data)}")
