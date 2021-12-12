@@ -1,5 +1,5 @@
 import unittest
-from main import readfile, solution1, solution2
+from main import readfile, solution
 
 class TestMethods(unittest.TestCase):
 
@@ -7,11 +7,11 @@ class TestMethods(unittest.TestCase):
     self.data = readfile("example.in")
 
   def test_example1(self):
-    self.assertEqual(solution1(self.data), 1656)
+    pass
+    #self.assertEqual(solution1(self.data), 1656)
 
   def test_example2(self):
-    self.assertTrue
-    #self.assertEqual(solution2(self.data), "")
+    self.assertEqual(solution(self.data), 195)
 
 if __name__ == '__main__':
   unittest.main()

@@ -15,27 +15,30 @@ def increase_level(x, y, data):
         data = increase_level(adj_x, adj_y, data)
   return data
 
-def solution1(data):
+def solution(data):
   flashes = 0
-  for _ in range(0, 100):
+  all_flash = False
+  count = 0
+  while not all_flash:
     # Increase levels
     for y in range(0, len(data)):
       for x in range(0, len(data[0])):
         data = increase_level(x, y, data)
   
     # Flash
+    all_flash = True
     for y in range(0, len(data)):
       for x in range(0, len(data[0])):
         if data[y][x] > 9:
           flashes += 1
           data[y][x] = 0
-
-  return flashes
-
-def solution2(data):
-  return data
+        else:
+          all_flash = False
+    count += 1      
+    
+  return count
 
 if __name__ == '__main__':
   data = readinput()
-  print(f"Solution 1: {solution1(data)}")
-  #print(f"Solution 2: {solution2(data)}")
+  #print(f"Solution 1: {solution1(data)}")
+  print(f"Solution 2: {solution(data)}")
