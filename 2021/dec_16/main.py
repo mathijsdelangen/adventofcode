@@ -27,12 +27,9 @@ def get_literal_value(packet):
 def calculate_version_sum(packet):
   if len(packet) < 7:
     return 0
-
-  print(packet)
-  version_sum = 0
   
-  # First three bits is version
-  version_sum += int(packet[0:3], 2)
+  # First three bits is the version
+  version_sum = int(packet[0:3], 2)
   print(f"Version: {int(packet[0:3], 2)}")
 
   # Next three bits is packet type ID
@@ -40,25 +37,21 @@ def calculate_version_sum(packet):
   print(f"Type ID: {type_id}")
 
   next_idx = 6
-  # Parse literal value
+  # Parse type
   if type_id == 4:
     literal_value, end_idx = get_literal_value(packet[6:])
-    next_idx += end_idx
     print(f"Literal value: {literal_value}")
+    next_idx += end_idx
   else:
-    # 15 bit number represents number of bits in sub packets
-    if packet[6] == '0':
-      next_idx += 16
-    # 11 bit number represents number of bits in sub packets
-    else:
-      next_idx += 12
+    next_idx += 16 if packet[6] == '0' else 12
   
-  version_sum += calculate_version_sum(packet[next_idx:])
+  return version_sum + calculate_version_sum(packet[next_idx:])
 
-  return version_sum
+def evaluate_expression(packet):
+  return 0
 
 def solution1(data):
-  return calculate_version_sum(data)
+  return evaluate_expression(data)
 
 def solution2(data):
   return data

@@ -1,5 +1,5 @@
 import unittest
-from main import calculate_version_sum, get_literal_value, hex_to_bin, readfile, solution1, solution2
+from main import calculate_version_sum, evaluate_expression, get_literal_value, hex_to_bin, readfile, solution1, solution2
 
 class TestMethods(unittest.TestCase):
 
@@ -21,6 +21,18 @@ class TestMethods(unittest.TestCase):
     self.assertEqual(calculate_version_sum(hex_to_bin("620080001611562C8802118E34")), 12)
     self.assertEqual(calculate_version_sum(hex_to_bin("C0015000016115A2E0802F182340")), 23)
     self.assertEqual(calculate_version_sum(hex_to_bin("A0016C880162017C3686B18A3D4780")), 31)
+
+  def test_evaluate_expression(self):
+    pass
+    # self.assertEqual(evaluate_expression(hex_to_bin("C200B40A82"), 3))
+    # self.assertEqual(evaluate_expression(hex_to_bin("04005AC33890"), 54))
+    # self.assertEqual(evaluate_expression(hex_to_bin("880086C3E88112"), 7))
+    # self.assertEqual(evaluate_expression(hex_to_bin("CE00C43D881120"), 9))
+    # self.assertEqual(evaluate_expression(hex_to_bin("D8005AC2A8F0"), 1))
+    # self.assertEqual(evaluate_expression(hex_to_bin("F600BC2D8F"), 0))
+    # self.assertEqual(evaluate_expression(hex_to_bin("9C005AC2F8F0"), 0))
+    # self.assertEqual(evaluate_expression(hex_to_bin("9C0141080250320F1802104A08"), 1))
+
 
   def test_example2(self):
     self.assertTrue
