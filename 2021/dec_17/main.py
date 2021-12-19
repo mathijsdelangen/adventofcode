@@ -7,7 +7,7 @@ def readfile(file):
   text = text.split(",")
   bounds_x = text[0].replace("x=","").split("..")
   bounds_y = text[1].replace("y=","").split("..")
-  return (range(int(bounds_x[0]),int(bounds_x[1])), range(int(bounds_y[0]), int(bounds_y[1])))
+  return (range(int(bounds_x[0]),int(bounds_x[1])+1), range(int(bounds_y[0]), int(bounds_y[1])+1))
 
 def in_target_range(x, y, range_x, range_y):
   return x in range_x and y in range_y
@@ -29,7 +29,7 @@ def velocity_x_ends_up_in_target(x, range_x):
 def velocity_y_ends_up_in_target(y, range_y):
   pos_y = 0
   vel_y = y
-  while pos_y > range_y.stop:
+  while pos_y > range_y.start:
     pos_y += vel_y
     if pos_y in range_y:
       return True
@@ -42,7 +42,7 @@ def velocity_xy_ends_up_in_target(x, y, range_x, range_y):
   pos_y = 0
   vel_x = x
   vel_y = y
-  while pos_y > range_y.stop and pos_x < range_x.stop:
+  while pos_y > range_y.start and pos_x < range_x.stop:
     pos_x += vel_x
     pos_y += vel_y
     if pos_x in range_x and pos_y in range_y:
@@ -66,7 +66,7 @@ def get_highest_point(y):
 def readinput():
   return readfile("input.in")
 
-def solution1(data):
+def calculate(data):
   target_range_x = data[0]
   target_range_y = data[1]
 
@@ -76,23 +76,28 @@ def solution1(data):
       valid_x_ranges.append(x)
 
   valid_y_ranges = []
-  for y in range(1000):
+  for y in range(target_range_y.start, 1000):
     if velocity_y_ends_up_in_target(y, target_range_y):
       valid_y_ranges.append(y)
 
   # Find velocities that end up in the target range
   max_max_heigth = 0
+  nr_valid_velocities = 0
   for x in valid_x_ranges:
     for y in valid_y_ranges:
       if velocity_xy_ends_up_in_target(x, y, target_range_x, target_range_y):
+        nr_valid_velocities += 1
         max_max_heigth = max(get_highest_point(y), max_max_heigth)
 
-  return max_max_heigth
+  return max_max_heigth, nr_valid_velocities
+
+def solution1(data):
+  return calculate(data)[0]
 
 def solution2(data):
-  return data
+  return calculate(data)[1]
 
 if __name__ == '__main__':
   data = readinput()
   print(f"Solution 1: {solution1(data)}")
-  #print(f"Solution 2: {solution2(data)}")
+  print(f"Solution 2: {solution2(data)}")
