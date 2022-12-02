@@ -8,7 +8,7 @@ struct Round {
 fn calculate_round_score(opponent_choice: char, player_choice: char) -> i32
 {
     match opponent_choice{
-        'A' => 
+        'A' =>
         {
             match player_choice{
                 'X' => return 0 + 3,
@@ -17,7 +17,7 @@ fn calculate_round_score(opponent_choice: char, player_choice: char) -> i32
                 _ => panic!("unknown player input {}", player_choice),
             };
         }
-        'B' => 
+        'B' =>
         {
             match player_choice{
                 'X' => return 0 + 1, // OK
@@ -26,7 +26,7 @@ fn calculate_round_score(opponent_choice: char, player_choice: char) -> i32
                 _ => panic!("unknown player input {}", player_choice),
             };
         }
-        'C' => 
+        'C' =>
         {
             match player_choice{
                 'X' => return 0 + 2,
@@ -60,7 +60,7 @@ fn read_input(input_file: &str) -> Vec<Round>
         let chars: Vec<char> = input_line.chars().collect();
         rounds.push(Round { opponent_choice: chars[0], player_choice: chars[2] });
     }
-    
+
     return rounds;
 }
 
@@ -68,13 +68,13 @@ fn _first_solution(inputs: Vec<Round>) -> i32
 {
     return calculcate_score(inputs);
 }
- 
+
 fn second_solution(inputs: Vec<Round>) -> i32
 {
     return calculcate_score(inputs);
 }
 
-fn main() 
+fn main()
 {
     let input_file = read_input("assets/input.in");
     //println!("Solution 1: {}", first_solution(input_file));
@@ -84,7 +84,7 @@ fn main()
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn validate_sol1(){
         //assert_eq!(15, first_solution(read_input("assets/example.in")));
