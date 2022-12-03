@@ -5,6 +5,20 @@ struct Rucksack {
     compartment1: Vec<char>,
 }
 
+impl Rucksack {
+    fn get_full_content(&self) -> Vec<char> {
+        let mut content = Vec::new();
+        for c in self.compartment0.iter() {
+            content.push(*c);
+        }
+        
+        for c in self.compartment1.iter() {
+            content.push(*c);
+        }
+        return content;
+    }
+}
+
 fn create_from_line(line: &str) -> Rucksack {
     let chars: Vec<char> = line.chars().collect();
 
@@ -34,30 +48,56 @@ fn parse_input(input_file: &str) -> Vec<Rucksack> {
     return rucksacks;
 }
 
-fn first_solution(rucksacks: Vec<Rucksack>) -> usize {
+fn find_duplicate_item(compartment0: &Vec<char>, compartment1: &Vec<char>) -> Vec<char> {
+    let mut comp0 = compartment0.to_vec();
+    let mut comp1 = compartment1.to_vec();
+    let mut duplicates = Vec::new();
+
+    comp0.sort_by(|a, b| return compare_priorities(a, b));
+    comp1.sort_by(|a, b| return compare_priorities(a, b));
+
+    let mut index0 = 0;
+    let mut index1 = 0;
+    while index0 < comp0.len() && index1 < comp1.len() {
+        let x = compare_priorities(&comp0[index0], &comp1[index1]);
+        if x.is_eq() {
+            duplicates.push(comp0[index0]);
+            index0 += 1;
+            index1 += 1;
+        } else if x.is_le()
+        {
+            index0 += 1
+        }
+        else {
+            index1 += 1
+        }
+    }
+    return duplicates;
+}
+
+fn find_duplicate_of_three(r0: &Rucksack, r1: &Rucksack, r2: &Rucksack) -> char {
+
+    let duplicates = find_duplicate_item(&r0.get_full_content(), &r1.get_full_content());
+    let duplicate = find_duplicate_item(&duplicates, &r2.get_full_content());
+
+    return duplicate[0];
+}
+
+
+fn first_solution(rucksacks: &Vec<Rucksack>) -> usize {
     let mut sum_of_priorities = 0;
     for rucksack in rucksacks {
-        let mut comp0 = rucksack.compartment0;
-        let mut comp1 = rucksack.compartment1;
+        sum_of_priorities += get_priority(find_duplicate_item(&rucksack.compartment0, &rucksack. compartment1)[0]);
+    }
 
-        comp0.sort_by(|a, b| return compare_priorities(a, b));
-        comp1.sort_by(|a, b| return compare_priorities(a, b));
+    return sum_of_priorities;
+}
 
-        let mut index0 = 0;
-        let mut index1 = 0;
-        while index0 < comp0.len() && index1 < comp1.len() {
-            let x = compare_priorities(&comp0[index0], &comp1[index1]);
-            if x.is_eq() {
-                sum_of_priorities += get_priority(comp0[index0]);
-                break;
-            } else if x.is_le()
-            {
-                index0 += 1
-            }
-            else {
-                index1 += 1
-            }
-        }
+fn second_solution(rucksacks: Vec<Rucksack>) -> usize {
+    let mut sum_of_priorities = 0;
+    for idx in (0..rucksacks.len()).step_by(3) {
+        sum_of_priorities += get_priority(find_duplicate_of_three(&rucksacks[idx], &rucksacks[idx+1], &rucksacks[idx+2]));
+        
     }
 
     return sum_of_priorities;
@@ -65,8 +105,8 @@ fn first_solution(rucksacks: Vec<Rucksack>) -> usize {
 
 fn main() {
     let input_file = parse_input("assets/input.in");
-    println!("Solution 1: {}", first_solution(input_file));
-    //println!("Solution 2: {}", second_solution(input_file));
+    println!("Solution 1: {}", first_solution(&input_file));
+    println!("Solution 2: {}", second_solution(input_file));
 }
 
 #[cfg(test)]
@@ -93,11 +133,11 @@ mod tests {
 
     #[test]
     fn validate_example_1() {
-        assert_eq!(157, first_solution(parse_input("assets/example.in")));
+        assert_eq!(157, first_solution(&parse_input("assets/example.in")));
     }
 
     #[test]
     fn validate_example_2() {
-        //assert_eq!(12, second_solution(parse_input("assets/example.in")));
+        assert_eq!(70, second_solution(parse_input("assets/example.in")));
     }
 }
