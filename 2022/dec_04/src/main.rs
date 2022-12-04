@@ -12,19 +12,37 @@ struct SectionAssignment {
 }
 impl SectionAssignment {
     fn fully_contains(&self) -> bool {
-        return (self.pair.0.min <= self.pair.1.min && self.pair.0.max >= self.pair.1.max) || 
-        (self.pair.1.min <= self.pair.0.min && self.pair.1.max >= self.pair.0.max)
+        return (self.pair.0.min <= self.pair.1.min && self.pair.0.max >= self.pair.1.max)
+            || (self.pair.1.min <= self.pair.0.min && self.pair.1.max >= self.pair.0.max);
+    }
+
+    fn have_overlap(&self) -> bool {
+        return (self.pair.0.min..=self.pair.0.max).contains(&self.pair.1.min)
+            || (self.pair.0.min..=self.pair.0.max).contains(&self.pair.1.max)
+            || (self.pair.1.min..=self.pair.1.max).contains(&self.pair.0.min)
+            || (self.pair.1.min..=self.pair.1.max).contains(&self.pair.0.max);
     }
 }
 
 fn create_assignment(line: &str) -> Assignment {
-    let parts: Vec<usize> = line.split("-").map(|part| part.parse::<usize>().unwrap()).collect();
-    return Assignment{min: parts[0], max: parts[1]}
+    let parts: Vec<usize> = line
+        .split("-")
+        .map(|part| part.parse::<usize>().unwrap())
+        .collect();
+    return Assignment {
+        min: parts[0],
+        max: parts[1],
+    };
 }
 
 fn create_from_line(line: &str) -> SectionAssignment {
-    let assignments: Vec<Assignment> = line.split(",").map(|part| create_assignment(&part)).collect();
-    return SectionAssignment { pair: (assignments[0], assignments[1]) }
+    let assignments: Vec<Assignment> = line
+        .split(",")
+        .map(|part| create_assignment(&part))
+        .collect();
+    return SectionAssignment {
+        pair: (assignments[0], assignments[1]),
+    };
 }
 
 fn parse_input(input_file: &str) -> Vec<SectionAssignment> {
@@ -38,11 +56,17 @@ fn parse_input(input_file: &str) -> Vec<SectionAssignment> {
 }
 
 fn first_solution(section_assignments: &Vec<SectionAssignment>) -> usize {
-    return section_assignments.iter().filter(|&sa| sa.fully_contains()).count();
+    return section_assignments
+        .iter()
+        .filter(|&sa| sa.fully_contains())
+        .count();
 }
 
 fn second_solution(section_assignments: &Vec<SectionAssignment>) -> usize {
-    return 0;
+    return section_assignments
+        .iter()
+        .filter(|&sa| sa.have_overlap())
+        .count();
 }
 
 fn main() {
@@ -62,6 +86,6 @@ mod tests {
 
     #[test]
     fn validate_example_2() {
-        //assert_eq!(70, second_solution(parse_input("assets/example.in")));
+        assert_eq!(4, second_solution(&parse_input("assets/example.in")));
     }
 }
