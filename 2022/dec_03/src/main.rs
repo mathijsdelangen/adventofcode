@@ -97,7 +97,6 @@ fn second_solution(rucksacks: Vec<Rucksack>) -> usize {
     let mut sum_of_priorities = 0;
     for idx in (0..rucksacks.len()).step_by(3) {
         sum_of_priorities += get_priority(find_duplicate_of_three(&rucksacks[idx], &rucksacks[idx+1], &rucksacks[idx+2]));
-        
     }
 
     return sum_of_priorities;
