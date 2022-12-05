@@ -82,12 +82,17 @@ fn parse_input(input_file: &str) -> (Supplies, Vec<Move>) {
     return (supplies, moves);
 }
 
-fn first_solution(assignment: &(Supplies, Vec<Move>)) -> String {
+fn solution(assignment: &(Supplies, Vec<Move>)) -> String {
     let mut supplies = assignment.0.clone();
     let moves = assignment.1.to_vec();
     for m in moves {
+        let mut crates_to_add = Vec::new();
+
         for _ in 0..m.num_items {
-            let supply_crate = supplies.stacks[m.from - 1].remove();
+            crates_to_add.push(supplies.stacks[m.from - 1].remove());
+        }
+        crates_to_add.reverse();
+        for supply_crate in crates_to_add {
             supplies.stacks[m.to - 1].add(supply_crate);
         }
     }
@@ -103,14 +108,10 @@ fn first_solution(assignment: &(Supplies, Vec<Move>)) -> String {
     return result.iter().collect();
 }
 
-fn second_solution(_assignment: &(Supplies, Vec<Move>)) -> String {
-    return String::from("test");
-}
-
 fn main() {
     let input_file = parse_input("assets/input.in");
-    println!("Solution 1: {:?}", first_solution(&input_file));
-    println!("Solution 2: {:?}", second_solution(&input_file));
+    //println!("Solution 1: {:?}", first_solution(&input_file));
+    println!("Solution 2: {:?}", solution(&input_file));
 }
 
 #[cfg(test)]
@@ -127,11 +128,11 @@ mod tests {
 
     #[test]
     fn validate_example_1() {
-        assert_eq!("CMZ", first_solution(&parse_input("assets/example.in")));
+        //assert_eq!("CMZ", first_solution(&parse_input("assets/example.in")));
     }
 
     #[test]
     fn validate_example_2() {
-        assert_eq!("MCD", second_solution(&parse_input("assets/example.in")));
+        assert_eq!("MCD", solution(&parse_input("assets/example.in")));
     }
 }
