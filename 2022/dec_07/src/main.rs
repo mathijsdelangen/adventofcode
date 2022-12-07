@@ -1,8 +1,11 @@
+use std::cmp;
 use std::collections::HashMap;
 use std::fs;
 
 const DELIMETER: &str = "/";
 const SIZE_CHECK: usize = 100000;
+const MAX_SIZE: usize = 70000000;
+const UPDATE_SIZE: usize = 30000000;
 
 type DirectoryInfo = HashMap<String, Directory>;
 type FileInfo = HashMap<String, File>;
@@ -39,7 +42,6 @@ struct File {
 }
 
 fn command_goto_dir(dir: &String, current_path: &mut String) -> () {
-    println!("Move to {:?}", dir);
     match dir.as_str() {
         ".." => {
             let delim_removed = String::from(current_path.rsplit_once(DELIMETER).unwrap().0);
@@ -50,11 +52,17 @@ fn command_goto_dir(dir: &String, current_path: &mut String) -> () {
         _ => current_path.push_str(dir),
     }
     current_path.push_str(DELIMETER);
-    println!("Current path {:?}", current_path);
+}
+
+fn files_to_filesystem(files: &FileInfo) -> Directory {
+    let mut file_system = Directory::default();
+    for f in files {
+        file_system.add_file_by_path(f.0, f.1);
+    }
+    return file_system;
 }
 
 fn parse_file_list(files: Vec<&str>, file_system: &mut FileInfo, current_path: &mut String) -> () {
-    println!("Parse file list: {:?}", files);
     for f in files {
         if f.starts_with("dir") {
             // Don't care
@@ -71,7 +79,6 @@ fn parse_file_list(files: Vec<&str>, file_system: &mut FileInfo, current_path: &
             );
         }
     }
-    println!("current directory list: {:?}", file_system);
 }
 
 fn parse_command(commands: &str, file_system: &mut FileInfo, current_path: &mut String) -> () {
@@ -102,7 +109,6 @@ fn parse_input(input_file: &str) -> FileInfo {
 }
 
 fn sum_of_sizes(directory: &Directory) -> usize {
-    println!("My size: {:?}", directory.size);
     let mut solution = 0;
     if directory.size <= SIZE_CHECK {
         solution += directory.size;
@@ -117,20 +123,34 @@ fn sum_of_sizes(directory: &Directory) -> usize {
 fn first_solution(input_file: &str) -> usize {
     let flat_files = parse_input(input_file);
     let file_system = files_to_filesystem(&flat_files);
-    println!("File system: {:?}", file_system);
+    
     return sum_of_sizes(&file_system);
 }
 
-fn files_to_filesystem(files: &FileInfo) -> Directory {
-    let mut file_system = Directory::default();
-    for f in files {
-        file_system.add_file_by_path(f.0, f.1);
+fn find_directory_to_delete(directory: &Directory, space_needed: usize) -> usize {
+    let mut best_solution = MAX_SIZE;
+    if directory.size > space_needed {
+        best_solution = directory.size;
     }
-    return file_system;
+
+    for d in directory.directories.values() {
+        best_solution = cmp::min(best_solution, find_directory_to_delete(d, space_needed));
+    }
+
+    return best_solution;
+}
+
+fn second_solution(input_file: &str) -> usize {
+    let flat_files = parse_input(input_file);
+    let file_system = files_to_filesystem(&flat_files);
+    let space_needed = UPDATE_SIZE - (MAX_SIZE - file_system.size);
+
+    return find_directory_to_delete(&file_system, space_needed);
 }
 
 fn main() {
     println!("Solution 1: {:?}", first_solution(&"assets/input.in"));
+    println!("Solution 2: {:?}", second_solution(&"assets/input.in"));
 }
 
 #[cfg(test)]
@@ -144,6 +164,6 @@ mod tests {
 
     #[test]
     fn validate_example_2() {
-        //assert_eq!(TBD, solution(&parse_input("assets/example.in")));
+        assert_eq!(24933642, second_solution("assets/example.in"));
     }
 }
