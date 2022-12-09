@@ -1,3 +1,4 @@
+use std::cmp;
 use std::fs;
 
 type Forest = Vec<Vec<Tree>>;
@@ -19,10 +20,10 @@ fn parse_input(input_file: &str) -> Forest {
         .collect::<Vec<_>>();
 }
 
-fn tree_visible(tree: Tree, other_trees: &Vec<Tree>) -> bool {   
+fn tree_visible(tree: Tree, other_trees: &Vec<Tree>) -> bool {
     match other_trees.iter().max() {
         Some(val) => return tree > *val,
-        None      => return true,
+        None => return true,
     }
 }
 
@@ -36,7 +37,7 @@ fn visible_trees(forest: &Forest) -> usize {
             if tree_visible(tree, &forest[y][..x].to_vec())
                 || tree_visible(tree, &forest[y][(x + 1)..].to_vec())
                 || tree_visible(tree, &vertical_line[..y].to_vec())
-                || tree_visible(tree, &vertical_line[(y+1)..].to_vec())
+                || tree_visible(tree, &vertical_line[(y + 1)..].to_vec())
             {
                 count += 1
             }
@@ -46,10 +47,42 @@ fn visible_trees(forest: &Forest) -> usize {
     return count;
 }
 
+fn scenic_score(tree: Tree, other_trees: &Vec<Tree>) -> usize {
+    for i in 0..other_trees.len() {
+        if other_trees[i] >= tree {
+            return i + 1;
+        }
+    }
+    return other_trees.len();
+}
+
+fn best_scenic_score(forest: &Forest) -> usize {
+    let mut best_scenic_score = 0;
+    for y in 0..forest.len() {
+        for x in 0..forest[0].len() {
+            let tree = forest[y][x];
+            let vertical_line: Vec<Tree> = forest.iter().map(|tree_line| tree_line[x]).collect();
+
+            let mut left = forest[y][..x].to_vec();
+            left.reverse();
+            let right = forest[y][(x + 1)..].to_vec();
+            let mut up = vertical_line[..y].to_vec();
+            up.reverse();
+            let down = vertical_line[(y + 1)..].to_vec();
+            let score = scenic_score(tree, &left)
+                * scenic_score(tree, &right)
+                * scenic_score(tree, &up)
+                * scenic_score(tree, &down);
+            best_scenic_score = std::cmp::max(best_scenic_score, score);
+        }
+    }
+
+    return best_scenic_score;
+}
 fn main() {
     let forest = parse_input("assets/input.in");
     println!("Solution 1: {:?}", visible_trees(&forest));
-    //println!("Solution 2: {:?}", visible_trees(&forest));
+    println!("Solution 2: {:?}", best_scenic_score(&forest));
 }
 
 #[cfg(test)]
@@ -65,12 +98,21 @@ mod tests {
     }
 
     #[test]
+    fn validate_scenic_score() {
+        assert_eq!(5, scenic_score(5, &(0..5).collect())); // 0, 1, 2, 3, 4
+        assert_eq!(4, scenic_score(3, &(0..5).collect()));
+        assert_eq!(2, scenic_score(1, &(0..5).collect()));
+        assert_eq!(0, scenic_score(1, &(5..0).collect()));
+        assert_eq!(0, scenic_score(4, &(5..0).collect()));
+    }
+
+    #[test]
     fn validate_example_1() {
         assert_eq!(21, visible_trees(&parse_input("assets/example.in")));
     }
 
     #[test]
     fn validate_example_2() {
-        //assert_eq!("MCD", solution(&parse_input("assets/example.in")));
+        assert_eq!(8, best_scenic_score(&parse_input("assets/example.in")));
     }
 }
