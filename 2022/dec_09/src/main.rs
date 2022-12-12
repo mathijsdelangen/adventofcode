@@ -48,125 +48,130 @@ fn parse_input(input_file: &str) -> Moves {
         .collect::<Vec<_>>();
 }
 
-fn tail_in_range(head_position: &Position, tail_position: &Position) -> bool {
+fn knot_in_range(head_position: &Position, tail_position: &Position) -> bool {
     return (head_position.x - tail_position.x).abs() <= 1
         && (head_position.y - tail_position.y).abs() <= 1;
 }
 
-fn set_new_tail_position(head_position: &Position, tail_position: &mut Position) -> () {
+fn set_new_knot_position(rope: &mut Vec<Position>, knot_idx: usize) -> () {
     // On same line
-    if tail_position.x == head_position.x || tail_position.y == head_position.y {
-        if tail_in_range(
-            head_position,
+    if rope[knot_idx].x == rope[knot_idx - 1].x || rope[knot_idx].y == rope[knot_idx - 1].y {
+        if knot_in_range(
+            &rope[knot_idx - 1],
             &Position {
-                x: tail_position.x + 1,
-                y: tail_position.y,
+                x: rope[knot_idx].x + 1,
+                y: rope[knot_idx].y,
             },
         ) {
-            tail_position.x += 1;
-        } 
-        else if tail_in_range(
-            head_position,
+            rope[knot_idx].x += 1;
+        } else if knot_in_range(
+            &rope[knot_idx - 1],
             &Position {
-                x: tail_position.x - 1,
-                y: tail_position.y,
+                x: rope[knot_idx].x - 1,
+                y: rope[knot_idx].y,
             },
         ) {
-            tail_position.x -= 1;
-        } else if tail_in_range(
-            head_position,
+            rope[knot_idx].x -= 1;
+        } else if knot_in_range(
+            &rope[knot_idx - 1],
             &Position {
-                x: tail_position.x,
-                y: tail_position.y + 1,
+                x: rope[knot_idx].x,
+                y: rope[knot_idx].y + 1,
             },
         ) {
-            tail_position.y += 1
-        }
-        else if tail_in_range(
-            head_position,
+            rope[knot_idx].y += 1
+        } else if knot_in_range(
+            &rope[knot_idx - 1],
             &Position {
-                x: tail_position.x,
-                y: tail_position.y - 1,
+                x: rope[knot_idx].x,
+                y: rope[knot_idx].y - 1,
             },
         ) {
-            tail_position.y -= 1
+            rope[knot_idx].y -= 1
         }
     }
     // Diagonally
-    else if tail_in_range(
-        head_position,
+    else if knot_in_range(
+        &rope[knot_idx - 1],
         &Position {
-            x: tail_position.x + 1,
-            y: tail_position.y + 1,
+            x: rope[knot_idx].x + 1,
+            y: rope[knot_idx].y + 1,
         },
     ) {
-        tail_position.x += 1;
-        tail_position.y += 1;
-    } else if tail_in_range(
-        head_position,
+        rope[knot_idx].x += 1;
+        rope[knot_idx].y += 1;
+    } else if knot_in_range(
+        &rope[knot_idx - 1],
         &Position {
-            x: tail_position.x + 1,
-            y: tail_position.y - 1,
+            x: rope[knot_idx].x + 1,
+            y: rope[knot_idx].y - 1,
         },
     ) {
-        tail_position.x += 1;
-        tail_position.y -= 1;
-    } else if tail_in_range(
-        head_position,
+        rope[knot_idx].x += 1;
+        rope[knot_idx].y -= 1;
+    } else if knot_in_range(
+        &rope[knot_idx - 1],
         &Position {
-            x: tail_position.x - 1,
-            y: tail_position.y + 1,
+            x: rope[knot_idx].x - 1,
+            y: rope[knot_idx].y + 1,
         },
     ) {
-        tail_position.x -= 1;
-        tail_position.y += 1;
-    } else if tail_in_range(
-        head_position,
+        rope[knot_idx].x -= 1;
+        rope[knot_idx].y += 1;
+    } else if knot_in_range(
+        &rope[knot_idx - 1],
         &Position {
-            x: tail_position.x - 1,
-            y: tail_position.y - 1,
+            x: rope[knot_idx].x - 1,
+            y: rope[knot_idx].y - 1,
         },
     ) {
-        tail_position.x -= 1;
-        tail_position.y -= 1;
+        rope[knot_idx].x -= 1;
+        rope[knot_idx].y -= 1;
     } else {
         panic!("We are too far out of range!");
     }
 }
 
-fn handle_tail(head_position: &Position, mut tail_position: &mut Position) -> bool {
-    if !tail_in_range(&head_position, &tail_position) {
-        set_new_tail_position(head_position, &mut tail_position);
+fn handle_knot(mut rope: &mut Vec<Position>, knot_idx: usize) -> bool {
+    if !knot_in_range(&rope[knot_idx - 1], &rope[knot_idx]) {
+        set_new_knot_position(&mut rope, knot_idx);
         return true;
     }
     return false;
 }
 
-fn walk(moves: &Moves) -> Positions {
-    let mut head_pos = Position::default();
-    let mut tail_pos = Position::default();
-    let mut positions = Positions::new();
-    positions.push(tail_pos);
+fn walk(moves: &Moves, nr_knots: usize) -> Positions {
+    let mut rope = vec![Position::default(); nr_knots];
+    let mut positions_of_tail = Positions::new();
+    let tail_idx = nr_knots - 1;
+
+    positions_of_tail.push(rope[tail_idx]);
 
     for (direction, nr_moves) in moves {
         for _ in 0..*nr_moves {
             match direction {
-                Direction::Right => head_pos.x += 1,
-                Direction::Left => head_pos.x -= 1,
-                Direction::Up => head_pos.y += 1,
-                Direction::Down => head_pos.y -= 1,
-                _ => panic!("Unknown move"),
+                Direction::Right => rope[0].x += 1,
+                Direction::Left => rope[0].x -= 1,
+                Direction::Up => rope[0].y += 1,
+                Direction::Down => rope[0].y -= 1,
             }
-            //println!("Head at {:?}, tail at {:?}", head_pos, tail_pos);
+            //println!("Head at {:?}, tail at {:?}", rope[0], rope[tail_idx]);
 
-            if handle_tail(&head_pos, &mut tail_pos) {
-                // println!("  New tail pos! {:?}", tail_pos);
-                positions.push(tail_pos);
+            for knot_idx in 1..=nr_knots - 2 {
+                if handle_knot(&mut rope, knot_idx) {
+                    //println!("  Knot {:?} changed to position {:?}", knot_idx, rope[knot_idx]);
+                }
+            }
+
+            // Handle tail seperately
+            if handle_knot(&mut rope, tail_idx) {
+                //println!("  New tail pos! {:?}", rope[tail_idx]);
+                positions_of_tail.push(rope[tail_idx]);
             }
         }
     }
 
-    return positions;
+    return positions_of_tail;
 }
 
 fn num_positions_visited(positions: &Positions) -> usize {
@@ -184,8 +189,18 @@ fn num_positions_visited(positions: &Positions) -> usize {
 
 fn main() {
     let moves = parse_input("assets/input.in");
-    let positions = walk(&moves);
-    println!("Solution 1: {:?}", num_positions_visited(&positions));
+
+    let positions_two_knots = walk(&moves, 2);
+    println!(
+        "Solution 1: {:?}",
+        num_positions_visited(&positions_two_knots)
+    );
+
+    let positions_ten_knots = walk(&moves, 10);
+    println!(
+        "Solution 2: {:?}",
+        num_positions_visited(&positions_ten_knots)
+    );
 }
 
 #[cfg(test)]
@@ -196,10 +211,23 @@ mod tests {
     fn validate_example_1() {
         assert_eq!(
             13,
-            num_positions_visited(&walk(&parse_input("assets/example.in")))
+            num_positions_visited(&walk(&parse_input("assets/example.in"), 2))
         );
     }
 
     #[test]
-    fn validate_example_2() {}
+    fn validate_example_2a() {
+        assert_eq!(
+            1,
+            num_positions_visited(&walk(&parse_input("assets/example.in"), 10))
+        );
+    }
+
+    #[test]
+    fn validate_example_2b() {
+        assert_eq!(
+            36,
+            num_positions_visited(&walk(&parse_input("assets/example2.in"), 10))
+        );
+    }
 }
