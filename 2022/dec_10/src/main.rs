@@ -114,6 +114,7 @@ fn main() {
     println!("Solution 2:");
     print_image(&instructions);
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
