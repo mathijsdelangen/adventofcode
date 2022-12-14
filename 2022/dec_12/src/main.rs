@@ -111,28 +111,47 @@ fn calculate_paths(
     }
 }
 
-fn shortest_path_length(height_map: &Map, starting_point: &Point, end_point: &Point) -> usize {
+fn shortest_path_length(height_map: &Map, starting_point: &Point, end_point: &Point) -> Map {
     let mut distance_map = vec![vec![usize::MAX; height_map[0].len()]; height_map.len()];
 
     calculate_paths(height_map, &mut distance_map, *end_point, 0);
 
-    return distance_map[starting_point.1][starting_point.0];
+    return distance_map
 }
 
-fn calculcate_sol1() -> () {
+fn calculcate_solution() -> () {
     let (map, starting_point, end_point) = parse_input("assets/input.in");
+
+    let distance_map = shortest_path_length(&map, &starting_point, &end_point);
+    let path_length = distance_map[starting_point.1][starting_point.0];
 
     println!(
         "Solution 1: {:?}",
-        shortest_path_length(&map, &starting_point, &end_point)
+        path_length
     );
+
+    let mut shortest_path = path_length; // We already know this as a maximum
+
+    for (y, line) in map.iter().enumerate() {
+        for (x, height) in line.iter().enumerate() {
+            if map[y][x] == 0 && distance_map[y][x] < shortest_path {
+                shortest_path = distance_map[y][x];
+            }
+        }
+    }
+
+    println!(
+        "Solution 2: {:?}",
+        shortest_path
+    );
+    
 }
 
 fn main() {
     // Spawn thread with explicit stack size
     let child = thread::Builder::new()
         .stack_size(200 * 1024 * 1024)
-        .spawn(calculcate_sol1)
+        .spawn(calculcate_solution)
         .unwrap();
 
     // Wait for thread to join
