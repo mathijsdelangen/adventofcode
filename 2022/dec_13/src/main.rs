@@ -48,25 +48,31 @@ fn determine_closing_bracket_pos(line: &str) -> usize {
 }
 
 fn get_first_value(line: &str, start_index: usize) -> (usize, usize) {
-    let next_index = line[start_index..].find(",").unwrap_or(line.len() - start_index) + start_index;
-    let val = line[start_index..next_index].to_string().parse::<usize>().unwrap();
-    return (val, next_index - start_index + 1)
+    let next_index = line[start_index..]
+        .find(",")
+        .unwrap_or(line.len() - start_index)
+        + start_index;
+    let val = line[start_index..next_index]
+        .to_string()
+        .parse::<usize>()
+        .unwrap();
+    return (val, next_index - start_index + 1);
 }
 
 fn correct_ordering(left: &str, right: &str) -> Ordering {
-    println!(
-        "Handle {:?} ({:?}) vs {:?} ({:?})",
-        left,
-        left.len(),
-        right,
-        right.len()
-    );
+    // println!(
+    //     "Handle {:?} ({:?}) vs {:?} ({:?})",
+    //     left,
+    //     left.len(),
+    //     right,
+    //     right.len()
+    // );
 
     if left.len() == 0 && right.len() > 0 {
-        println!("Left side out of items (1)");
+        // println!("Left side out of items (1)");
         return Ordering::Correct;
     } else if right.len() == 0 && left.len() > 0 {
-        println!("Right side out of items (1)");
+        // println!("Right side out of items (1)");
         return Ordering::Incorrect;
     }
 
@@ -77,11 +83,11 @@ fn correct_ordering(left: &str, right: &str) -> Ordering {
 
     while left_idx < left.len() && right_idx < right.len() && ordering == Ordering::Undecided {
         // println!("Move to left: {:?}, right: {:?}", left_idx, right_idx);
-        println!(
-            "  Check first of {:?} vs {:?}",
-            &left[left_idx..],
-            &right[right_idx..]
-        );
+        // println!(
+        //     "  Check first of {:?} vs {:?}",
+        //     &left[left_idx..],
+        //     &right[right_idx..]
+        // );
         match (
             left.chars().nth(left_idx).unwrap(),
             right.chars().nth(right_idx).unwrap(),
@@ -94,10 +100,9 @@ fn correct_ordering(left: &str, right: &str) -> Ordering {
                     &left[left_idx + 1..left_pos],
                     &right[right_idx + 1..right_pos],
                 );
-                // }
 
                 left_idx = left_pos + 2;
-                right_idx = left_pos + 2;
+                right_idx = right_pos + 2;
             }
             ('[', _val_right) => {
                 // Find index of ']' for left
@@ -105,15 +110,13 @@ fn correct_ordering(left: &str, right: &str) -> Ordering {
 
                 let (_right_value, right_add_idx) = get_first_value(&right, right_idx);
 
-                // let mut test = String::from('[');
-                // test.push_str(&right_value.to_string());
-                // test.push(']');
+                ordering = correct_ordering(
+                    &left[left_idx + 1..left_pos],
+                    &right[right_idx..right_idx + right_add_idx - 1],
+                );
 
-                ordering = correct_ordering(&left[left_idx + 1..left_pos], &right[right_idx..right_idx+right_add_idx-1]);
-                
                 left_idx = left_pos + 2;
                 right_idx += right_add_idx;
-                // return Ordering::Incorrect;
             }
             (_val_left, '[') => {
                 // Find index of ']' for right
@@ -121,21 +124,19 @@ fn correct_ordering(left: &str, right: &str) -> Ordering {
 
                 let (_left_value, left_add_idx) = get_first_value(&left, left_idx);
 
-                // let mut test = String::from('[');
-                // test.push_str(&left_value.to_string());
-                // test.push(']');
+                ordering = correct_ordering(
+                    &left[left_idx..left_idx + left_add_idx - 1],
+                    &right[right_idx + 1..right_pos],
+                );
 
-                ordering = correct_ordering(&left[left_idx..left_idx+left_add_idx-1], &right[right_idx + 1..right_pos]);
-                
                 left_idx += left_add_idx;
                 right_idx = right_pos + 2;
-                // return Ordering::Incorrect;
             }
             _ => {
                 let (left_value, left_add_idx) = get_first_value(&left, left_idx);
                 let (right_value, right_add_idx) = get_first_value(&right, right_idx);
 
-                println!("  Values {:?} vs {:?}", left_value, right_value);
+                // println!("  Values {:?} vs {:?}", left_value, right_value);
 
                 if left_value == right_value {
                     left_idx += left_add_idx;
@@ -152,10 +153,10 @@ fn correct_ordering(left: &str, right: &str) -> Ordering {
     if ordering == Ordering::Undecided {
         // Check if we exceeded some list
         if right_idx >= right.len() && left_idx < left.len() {
-            println!("Right side out of items (2)");
+            // println!("Right side out of items (2)");
             return Ordering::Incorrect;
         } else if left_idx >= left.len() && right_idx < right.len() {
-            println!("Left side out of items (2)");
+            // println!("Left side out of items (2)");
             return Ordering::Correct;
         }
     }
@@ -168,22 +169,69 @@ fn pairs_in_correct_order(pairs: &Vec<Pair>) -> usize {
     for (idx, pair) in pairs.iter().enumerate() {
         if correct_ordering(&pair.Left, &pair.Right) == Ordering::Correct {
             sum_of_indices += idx + 1;
-            println!("Correct order");
+            // println!("Correct order");
         } else {
-            println!("Incorrect order");
+            // println!("Incorrect order");
         }
     }
 
     return sum_of_indices;
 }
 
+fn insert_sorted<'a>(packets: &mut Vec<&'a str>, packet: &'a str) {
+    let mut insert_at = packets.len();
+
+    if packets.len() == 0 {
+        insert_at = 0
+    } else if packets.len() == 1 {
+        if correct_ordering(&packets[0], packet) == Ordering::Correct {
+            insert_at = 1;
+        } else {
+            insert_at = 0;
+        }
+    } else {
+        if correct_ordering(packet, &packets[0]) == Ordering::Correct {
+            insert_at = 0;
+        } else {
+            for i in 0..packets.len() - 1 {
+                if correct_ordering(&packets[i], packet) == Ordering::Correct
+                    && correct_ordering(packet, &packets[i + 1]) == Ordering::Correct
+                {
+                    insert_at = i + 1;
+                    break;
+                }
+            }
+        }
+    }
+    // println!("Insert {:?} at location {:?}", packet, insert_at);
+    packets.insert(insert_at, packet);
+    // println!("Packets contains: \n {:?}", packets);
+}
+
+fn divider_packet_locations(pairs: &Vec<Pair>) -> usize {
+    let mut all_packets = Vec::new();
+
+    for pair in pairs {
+        insert_sorted(&mut all_packets, &pair.Left);
+        insert_sorted(&mut all_packets, &pair.Right);
+    }
+
+    let div_2 = String::from("[[2]]");
+    insert_sorted(&mut all_packets, &div_2);
+
+    let div_6 = String::from("[[6]]");
+    insert_sorted(&mut all_packets, &div_6);
+
+    println!("{:?}", all_packets);
+
+    return (all_packets.iter().position(|&r| r == div_2).unwrap() + 1)
+        * (all_packets.iter().position(|&r| r == div_6).unwrap() + 1);
+}
+
 fn main() {
     let pairs = parse_input("assets/input.in");
     println!("Solution 1: {:?}", &pairs_in_correct_order(&pairs));
-
-    let test: Vec<usize> = Vec::new();
-    let mut container = Vec::new();
-    container.push(test.to_vec());
+    println!("Solution 2: {:?}", &divider_packet_locations(&pairs))
 }
 
 #[cfg(test)]
@@ -222,26 +270,41 @@ mod tests {
             Ordering::Correct,
             correct_ordering(&String::from("[10,8]"), &String::from("[10,8,3]"))
         );
+
+        assert_eq!(
+            Ordering::Correct,
+            correct_ordering(&String::from("[]"), &String::from("[9]"))
+        );
     }
 
     #[test]
     fn validate_incorrect_ordering() {
         assert_eq!(
             Ordering::Incorrect,
-            correct_ordering(&String::from("[[1,2,3,4,5],1]"), &String::from("[1,2,3,4,5],6"))
-            // [1,2,3,4,5] vs 1,2,3,4,5
-            // [1,2,3,4,5] vs [1]
+            correct_ordering(
+                &String::from("[[1,2,3,4,5],1]"),
+                &String::from("[1,2,3,4,5],6")
+            ) // [1,2,3,4,5] vs 1,2,3,4,5
+              // [1,2,3,4,5] vs [1]
+        );
+
+        assert_eq!(
+            Ordering::Incorrect,
+            correct_ordering(&String::from("[9]"), &String::from("[]"))
         );
     }
 
     #[test]
     fn validate_input_1_fail() {
         let input = parse_input("assets/input.in");
-        assert!( pairs_in_correct_order(&input) < 5143);
-        assert!( pairs_in_correct_order(&input) < 5063);
-        assert!( pairs_in_correct_order(&input) == 4894);
+        assert!(pairs_in_correct_order(&input) < 5143);
+        assert!(pairs_in_correct_order(&input) < 5063);
+        assert!(pairs_in_correct_order(&input) == 4894);
     }
 
     #[test]
-    fn validate_example_2() {}
+    fn validate_example_2() {
+        let input = parse_input("assets/example.in");
+        assert_eq!(140, divider_packet_locations(&input));
+    }
 }
