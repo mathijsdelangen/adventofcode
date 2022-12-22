@@ -71,8 +71,12 @@ fn parse_input(input_file: &str) -> (Map, Point) {
     // println!("Min x: {:?}, max y: {:?}, max y: {:?}", min_x, max_x, max_y);
 
     // Create map, with a border around it (left, right and bottom)
-    let border = 1;
-    let mut map: Map = vec![vec![None; (max_x - min_x) + 1 + 2 * border]; max_y + 1 + border];
+    let y_border = 2;
+    let y_length = max_y + 1 + y_border;
+
+    let x_increase_border_size = y_length + 1;
+    let x_length = (max_x - min_x) + 1 + 2 * x_increase_border_size;
+    let mut map: Map = vec![vec![None; x_length]; y_length];
 
     for trace in traces.to_vec() {
         let parsed_trace = parse_trace(&trace);
@@ -80,31 +84,32 @@ fn parse_input(input_file: &str) -> (Map, Point) {
             let from = &parsed_trace[val_idx];
             let to = &parsed_trace[val_idx + 1];
 
-            // println!("X from {:?} to {:?}", from.x, to.x);
-            // println!("Y from {:?} to {:?}", from.y, to.y);
-
             // Just go through all possible ways here (up, down, left, right)
             for y in from.y..=to.y {
                 for x in from.x - min_x..=to.x - min_x {
-                    map[y][x + border] = Some(Material::Rock);
+                    map[y][x + x_increase_border_size] = Some(Material::Rock);
                 }
                 for x in to.x - min_x..=from.x - min_x {
-                    map[y][x + border] = Some(Material::Rock);
+                    map[y][x + x_increase_border_size] = Some(Material::Rock);
                 }
             }
             for y in to.y..=from.y {
                 for x in from.x - min_x..=to.x - min_x {
-                    map[y][x + border] = Some(Material::Rock);
+                    map[y][x + x_increase_border_size] = Some(Material::Rock);
                 }
                 for x in to.x - min_x..=from.x - min_x {
-                    map[y][x + border] = Some(Material::Rock);
+                    map[y][x + x_increase_border_size] = Some(Material::Rock);
                 }
             }
         }
     }
 
+    for x in 0..x_length {
+        map[y_length - 1][x] = Some(Material::Rock);
+    }
+
     let starting_point = Point {
-        x: 500 - min_x + border,
+        x: 500 - min_x + x_increase_border_size,
         y: 0,
     };
     return (map, starting_point);
@@ -134,6 +139,11 @@ fn drop_sand(map: &mut Map, starting_point: &Point) -> bool {
             current_sand_location.y += 1;
             current_sand_location.x += 1;
         } else {
+            if current_sand_location.x == starting_point.x
+                && current_sand_location.y == starting_point.y
+            {
+                return false;
+            }
             end_point_reached = true;
         }
     }
@@ -154,17 +164,19 @@ fn nr_units_until_resting_state_reached(map: &Map, starting_point: Point) -> usi
     let mut current_map_state = map.to_owned();
     let mut count = 0;
     while drop_sand(&mut current_map_state, &starting_point) {
-        print_map(&current_map_state);
+        // print_map(&current_map_state);
         count += 1;
     }
 
-    return count;
+    println!("Map:");
+    print_map(&current_map_state);
+    return count + 1; // We did not actually place the last one
 }
 
 fn main() {
     let (map, starting_point) = parse_input("assets/input.in");
     println!(
-        "Solution 1: {:?}",
+        "Solution: {:?}",
         &nr_units_until_resting_state_reached(&map, starting_point)
     );
 }
@@ -174,10 +186,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn validate_example_1() {
+    fn validate_example() {
         let (map, starting_point) = parse_input("assets/example.in");
         assert_eq!(
-            24,
+            93,
             nr_units_until_resting_state_reached(&map, starting_point)
         );
     }
